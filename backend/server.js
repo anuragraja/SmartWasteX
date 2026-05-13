@@ -16,8 +16,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*', // Allow all for demo
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
+    origin: ["https://smart-waste-x.vercel.app", "http://localhost:5173", "http://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
   }
 });
 
@@ -54,7 +55,12 @@ const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+  origin: ["https://smart-waste-x.vercel.app", "http://localhost:5173", "http://localhost:3000"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 // Logging middleware
 if (process.env.NODE_ENV === 'development') {

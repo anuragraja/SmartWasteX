@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useEffect, useContext, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Leaf, MapPin, Map as MapIcon, DollarSign, Star, Camera, Truck, X, Phone, CheckCircle, Package } from 'lucide-react';
@@ -35,9 +36,9 @@ const RecycleMarketplace = () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const [recRes, statsRes, histRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/recycle/recyclers', { headers }),
-        axios.get('http://localhost:5000/api/recycle/stats', { headers }),
-        axios.get('http://localhost:5000/api/recycle/requests', { headers })
+        api.get(`/api/recycle/recyclers`, { headers }),
+        api.get(`/api/recycle/stats`, { headers }),
+        api.get(`/api/recycle/requests`, { headers })
       ]);
       setRecyclers(recRes.data.data);
       setStats(statsRes.data.data);
@@ -84,7 +85,7 @@ const RecycleMarketplace = () => {
       formData.append('lat', 28.6139);
       formData.append('lng', 77.2090);
 
-      await axios.post('http://localhost:5000/api/recycle/request', formData, {
+      await api.post(`/api/recycle/request`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'

@@ -9,7 +9,7 @@ router.post('/upload', protect, upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, error: 'No file uploaded' });
   }
-  const url = `http://localhost:5000/uploads/${req.file.filename}`;
+  const url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
   res.status(200).json({ success: true, url });
 });
 

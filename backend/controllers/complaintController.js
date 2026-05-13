@@ -25,11 +25,11 @@ exports.createComplaint = async (req, res) => {
           const result = await cloudinary.uploader.upload(req.file.path, { folder: 'smartwaste' });
           imageUrl = result.secure_url;
         } else {
-          imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+          imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
         }
       } catch (err) {
         console.error('Cloudinary upload failed, using local URL', err);
-        imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+        imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
       }
     }
     

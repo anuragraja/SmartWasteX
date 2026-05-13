@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Truck, MapPin, Clock, CheckCircle, AlertCircle, RefreshCw, Navigation, X } from 'lucide-react';
@@ -13,7 +14,7 @@ const PickupManagement = () => {
 
   const fetchTasks = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/tasks', {
+      const res = await api.get(`/api/tasks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks(res.data.data);
@@ -30,7 +31,7 @@ const PickupManagement = () => {
 
   const updateStatus = async (id, status) => {
     try {
-      await axios.put(`http://localhost:5000/api/tasks/${id}/status`, { status }, {
+      await api.put(`/api/tasks/${id}/status`, { status }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success(`Task marked as ${status}`);
@@ -46,7 +47,7 @@ const PickupManagement = () => {
     if (!message) return;
 
     try {
-      await axios.post('http://localhost:5000/api/notifications', {
+      await api.post(`/api/notifications`, {
         userId: workerId,
         title: 'Message from Dashboard',
         message: message,

@@ -13,7 +13,7 @@ exports.uploadWaste = async (req, res) => {
     let aiResult = { fillLevel: 'Medium', confidence: null, reason: null };
 
     if (req.file) {
-      image = `http://localhost:5000/uploads/${req.file.filename}`;
+      image = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
       aiResult = await analyzeWasteImage(req.file.path, req.file.mimetype);
     }
 

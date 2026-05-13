@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, MapPin, Calendar, Clock, CheckCircle, Settings, Truck, TrendingUp, X } from 'lucide-react';
@@ -32,11 +33,11 @@ const RecyclerDashboard = () => {
       const headers = { Authorization: `Bearer ${token}` };
       
       // Initialize profile implicitly by getting prices
-      const profileRes = await axios.post('http://localhost:5000/api/recycle/profile', {}, { headers });
+      const profileRes = await api.post(`/api/recycle/profile`, {}, { headers });
       setProfile(profileRes.data.data);
       if (profileRes.data.data.prices) setPrices(profileRes.data.data.prices);
 
-      const reqs = await axios.get('http://localhost:5000/api/recycle/requests', { headers });
+      const reqs = await api.get(`/api/recycle/requests`, { headers });
       setRequests(reqs.data.data);
     } catch (err) {
       toast.error('Failed to load dashboard data');
@@ -47,7 +48,7 @@ const RecyclerDashboard = () => {
 
   const updateStatus = async (id, status, extra = {}) => {
     try {
-      await axios.put(`http://localhost:5000/api/recycle/request/${id}`, { status, ...extra }, {
+      await api.put(`/api/recycle/request/${id}`, { status, ...extra }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -73,7 +74,7 @@ const RecyclerDashboard = () => {
   const savePrices = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/recycle/profile', { prices }, {
+      await api.post(`/api/recycle/profile`, { prices }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Prices updated successfully');

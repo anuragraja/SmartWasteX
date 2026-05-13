@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Activity, CheckCircle, Clock, X, MessageSquare, Image as ImageIcon } from 'lucide-react';
@@ -18,7 +19,7 @@ const WorkerTracking = () => {
     const fetchWorkers = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/worker', {
+        const res = await api.get(`/api/worker`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setWorkers(res.data.data.length ? res.data.data : [
@@ -41,7 +42,7 @@ const WorkerTracking = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/notifications', {
+      await api.post(`/api/notifications`, {
         userId: workerId,
         title: 'Message from Admin',
         message: message,
@@ -61,7 +62,7 @@ const WorkerTracking = () => {
     setSelectedWorkerHistory({ name: workerName, uploads: [] });
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/worker/history/${workerId}`, {
+      const res = await api.get(`/api/worker/history/${workerId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSelectedWorkerHistory({ name: workerName, uploads: res.data.data });

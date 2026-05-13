@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -12,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
       if (token) {
         try {
-          const res = await axios.get('http://localhost:5000/api/auth/me', {
+          const res = await api.get(`/api/auth/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUser(res.data.data);
@@ -31,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
-    const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+    const res = await api.post(`/api/auth/login`, { email, password });
     setToken(res.data.token);
     setUser(res.data.user);
     localStorage.setItem('token', res.data.token);
@@ -40,7 +41,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (formData) => {
-    const res = await axios.post('http://localhost:5000/api/auth/register', formData);
+    const res = await api.post(`/api/auth/register`, formData);
     if (res.data.token) {
       setToken(res.data.token);
       setUser(res.data.user);
@@ -58,7 +59,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginFace = async (email, faceDescriptor) => {
-    const res = await axios.post('http://localhost:5000/api/auth/login-face', { email, faceDescriptor });
+    const res = await api.post(`/api/auth/login-face`, { email, faceDescriptor });
     setToken(res.data.token);
     setUser(res.data.user);
     localStorage.setItem('token', res.data.token);
@@ -67,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const registerFace = async (faceDescriptor) => {
-    const res = await axios.post('http://localhost:5000/api/auth/register-face', 
+    const res = await api.post(`/api/auth/register-face`, 
       { faceDescriptor },
       { headers: { Authorization: `Bearer ${token}` } }
     );

@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, Shield, User, MapPin, FileText, Check, Clock } from 'lucide-react';
@@ -15,10 +16,10 @@ const AccountRequests = () => {
   const fetchRequests = async () => {
     try {
       const [resReq, resKyc] = await Promise.all([
-        axios.get('http://localhost:5000/api/admin/requests', {
+        api.get(`/api/admin/requests`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get('http://localhost:5000/api/kyc/all', {
+        api.get(`/api/kyc/all`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -37,7 +38,7 @@ const AccountRequests = () => {
 
   const handleAction = async (id, action) => {
     try {
-      await axios.post(`http://localhost:5000/api/admin/requests/${id}`, { action }, {
+      await api.post(`/api/admin/requests/${id}`, { action }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success(`Request ${action}d successfully`);
@@ -49,7 +50,7 @@ const AccountRequests = () => {
 
   const handleKycAction = async (id, status) => {
     try {
-      await axios.put(`http://localhost:5000/api/kyc/${id}/verify`, { status }, {
+      await api.put(`/api/kyc/${id}/verify`, { status }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success(`KYC ${status} successfully`);

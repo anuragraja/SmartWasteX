@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
@@ -204,7 +205,7 @@ const WorkerDashboard = ({ tasks }) => {
 
   const completeTask = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/api/tasks/${id}/status`, { status: 'Completed' }, {
+      await api.put(`/api/tasks/${id}/status`, { status: 'Completed' }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       toast.success('Task Marked Complete');
@@ -216,7 +217,7 @@ const WorkerDashboard = ({ tasks }) => {
 
   const startTask = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/api/tasks/${id}/status`, { status: 'In Progress' }, {
+      await api.put(`/api/tasks/${id}/status`, { status: 'In Progress' }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       toast.success('Task Started');
@@ -228,7 +229,7 @@ const WorkerDashboard = ({ tasks }) => {
 
   const toggleStatus = async () => {
     try {
-      const res = await axios.put('http://localhost:5000/api/auth/status', {}, {
+      const res = await api.put(`/api/auth/status`, {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setIsOnline(res.data.data.isOnline);
@@ -402,22 +403,22 @@ const Dashboard = () => {
       
       try {
         if (user?.role === 'admin' || user?.role === 'worker') {
-          const wasteRes = await axios.get('http://localhost:5000/api/waste', { headers });
+          const wasteRes = await api.get(`/api/waste`, { headers });
           setReports(wasteRes.data.data.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)));
         }
         
         if (user?.role === 'worker' || user?.role === 'admin') {
-          const taskRes = await axios.get('http://localhost:5000/api/tasks', { headers });
+          const taskRes = await api.get(`/api/tasks`, { headers });
           setTasks(taskRes.data.data);
         }
 
         if (user?.role === 'public' || user?.role === 'society_head') {
-          const compRes = await axios.get('http://localhost:5000/api/complaints', { headers });
+          const compRes = await api.get(`/api/complaints`, { headers });
           setComplaints(compRes.data.data);
         }
 
         if (user?.role === 'society_head') {
-          const rankRes = await axios.get('http://localhost:5000/api/analytics/rankings', { headers });
+          const rankRes = await api.get(`/api/analytics/rankings`, { headers });
           setRankings(rankRes.data.data);
         }
       } catch (err) {

@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -36,7 +37,7 @@ const KYCForm = () => {
     formDataUpload.append('file', file);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/kyc/upload', formDataUpload, {
+      const res = await api.post(`/api/kyc/upload`, formDataUpload, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
@@ -59,7 +60,7 @@ const KYCForm = () => {
     // Check if already submitted
     const checkKycStatus = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/kyc/status', {
+        const res = await api.get(`/api/kyc/status`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.data.data) {
@@ -85,7 +86,7 @@ const KYCForm = () => {
     setLoading(true);
 
     try {
-      await axios.post('http://localhost:5000/api/kyc/submit', formData, {
+      await api.post(`/api/kyc/submit`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('KYC Submitted Successfully! Pending Admin Approval.');

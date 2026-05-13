@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -14,7 +15,7 @@ const Heatmap = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/analytics/heatmap', {
+        const res = await api.get(`/api/analytics/heatmap`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         // Mock data if empty

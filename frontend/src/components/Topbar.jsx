@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Bell, User, LogOut, Menu, Moon, Sun, Settings, ChevronDown } from 'lucide-react';
@@ -36,7 +37,7 @@ const Topbar = () => {
   useEffect(() => {
     if (user && token) {
       // Fetch initial notifications
-      axios.get('http://localhost:5000/api/notifications', {
+      api.get(`/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
         const unread = res.data.data.filter(n => !n.isRead).length;
@@ -44,7 +45,7 @@ const Topbar = () => {
       }).catch(console.error);
 
       // Connect Socket
-      const socket = io('http://localhost:5000');
+      const socket = io(import.meta.env.VITE_API_URL);
       socket.emit('join', user.id);
 
       socket.on('newNotification', (notification) => {

@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useRef, useContext } from 'react';
 import { motion } from 'framer-motion';
 import { UploadCloud, Camera, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
@@ -44,7 +45,7 @@ const UploadImage = () => {
       formData.append('lat', 28.6139);
       formData.append('lng', 77.2090);
 
-      const res = await axios.post('http://localhost:5000/api/complaints', formData, {
+      const res = await api.post(`/api/complaints`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'

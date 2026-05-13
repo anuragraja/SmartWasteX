@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Check, Trash2, AlertCircle, ShieldCheck } from 'lucide-react';
@@ -12,7 +13,7 @@ const Notifications = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/notifications', {
+      const res = await api.get(`/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(res.data.data);
@@ -29,7 +30,7 @@ const Notifications = () => {
 
   const markAsRead = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/api/notifications/${id}/read`, {}, {
+      await api.put(`/api/notifications/${id}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));

@@ -1,3 +1,4 @@
+import api from "@/config/api";
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Medal, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
@@ -12,11 +13,11 @@ const Rankings = () => {
     const fetchRankings = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/analytics/rankings', {
+        const res = await api.get(`/api/analytics/rankings`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        const userRes = await axios.get('http://localhost:5000/api/analytics/top-users', {
+        const userRes = await api.get(`/api/analytics/top-users`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

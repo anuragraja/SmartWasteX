@@ -1,6 +1,6 @@
 import api from "@/config/api";
 import { useState, useContext, useRef } from 'react';
-import { Camera, MapPin, Image as ImageIcon } from 'lucide-react';
+import { Camera, MapPin, Image as ImageIcon, MapPinned, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -9,9 +9,15 @@ const PublicComplaint = () => {
   const { token, user } = useContext(AuthContext);
   const [imagePreview, setImagePreview] = useState('');
   const [loading, setLoading] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
   const [aiResult, setAiResult] = useState(null);
+  const [coords, setCoords] = useState({ lat: null, lng: null });
   const fileInputRef = useRef(null);
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
+    defaultValues: {
+      area: user?.area || ''
+    }
+  });
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -24,9 +30,39 @@ const PublicComplaint = () => {
     }
   };
 
+  const fetchLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported on this device.');
+      return;
+    }
+
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setCoords({ lat: latitude, lng: longitude });
+        
+        setValue('area', `GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, { shouldValidate: true });
+        toast.success('Location fetched successfully ✅');
+        setLocationLoading(false);
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        toast.error('Unable to fetch location. Please allow GPS access.');
+        setLocationLoading(false);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
+
   const onSubmit = async (data) => {
     if (!imagePreview) {
       toast.error('Please upload an image of the garbage.');
+      return;
+    }
+    
+    if (!coords.lat || !coords.lng) {
+      toast.error('Please fetch your location first by clicking "Auto Fetch Location".');
       return;
     }
     
@@ -35,10 +71,9 @@ const PublicComplaint = () => {
       const formData = new FormData();
       formData.append('image', fileInputRef.current.files[0]);
       formData.append('title', data.title);
-      formData.append('description', data.description);
       formData.append('area', data.area);
-      formData.append('lat', 28.6139);
-      formData.append('lng', 77.2090);
+      formData.append('lat', coords.lat);
+      formData.append('lng', coords.lng);
 
       const res = await api.post(`/api/complaints`, formData, {
         headers: { 
@@ -51,6 +86,7 @@ const PublicComplaint = () => {
       setAiResult(res.data.data?.aiAnalysis ?? null);
       reset();
       setImagePreview('');
+      setCoords({ lat: null, lng: null });
     } catch (err) {
       toast.error('Failed to submit complaint.');
     } finally {
@@ -85,49 +121,54 @@ const PublicComplaint = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Area / Location</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MapPin className="h-4 w-4 text-gray-400" />
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      {...register('area', { required: 'Area is required' })}
+                      className="block w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981]"
+                      placeholder="e.g. Anand Nagar"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    defaultValue={user?.area}
-                    {...register('area')}
-                    className="block w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981]"
-                    placeholder="e.g. Anand Nagar (Optional)"
-                  />
+                  <button
+                    type="button"
+                    onClick={fetchLocation}
+                    disabled={locationLoading}
+                    className="flex items-center justify-center px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-md font-medium text-xs hover:bg-blue-100 transition-colors disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {locationLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <MapPinned className="w-4 h-4 mr-2" />
+                    )}
+                    {locationLoading ? 'Fetching...' : 'Auto Fetch Location'}
+                  </button>
                 </div>
                 {errors.area && <span className="text-xs text-red-500 mt-1">{errors.area.message}</span>}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Description</label>
-                <textarea
-                  {...register('description', { required: 'Description is required' })}
-                  rows="4"
-                  className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] resize-none"
-                  placeholder="Provide more details about the garbage location and severity..."
-                ></textarea>
-                {errors.description && <span className="text-xs text-red-500 mt-1">{errors.description.message}</span>}
+                {coords.lat && coords.lng && (
+                  <p className="text-xs text-green-600 mt-1.5 font-medium flex items-center">
+                    ✓ Coordinates acquired: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+                  </p>
+                )}
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Evidence Image</label>
               <div 
-                className={`h-[268px] border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all overflow-hidden ${imagePreview ? 'border-[#10B981] bg-green-50/30' : 'border-gray-300 hover:bg-gray-50'}`}
+                className={`h-[150px] border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all overflow-hidden ${imagePreview ? 'border-[#10B981] bg-green-50/30' : 'border-gray-300 hover:bg-gray-50'}`}
                 onClick={() => fileInputRef.current.click()}
               >
                 {imagePreview ? (
                   <img src={imagePreview} alt="Preview" className="w-full h-full object-contain rounded-md" />
                 ) : (
                   <>
-                    <Camera className="w-8 h-8 text-gray-400 mb-3" />
+                    <Camera className="w-6 h-6 text-gray-400 mb-2" />
                     <h3 className="text-sm font-medium text-gray-700 mb-1">Click to upload image</h3>
-                    <p className="text-xs text-gray-500 mb-4 px-8">Take a photo of the garbage for AI analysis.</p>
-                    <span className="inline-flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-md text-xs font-medium text-gray-600 shadow-sm hover:bg-gray-50">
-                      <ImageIcon className="w-3.5 h-3.5 mr-2" /> Browse Files
-                    </span>
+                    <p className="text-xs text-gray-500">Take a photo of the garbage for AI analysis.</p>
                   </>
                 )}
               </div>

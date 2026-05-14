@@ -1,6 +1,6 @@
 import api from "@/config/api";
 import { useState, useEffect, useContext, useRef } from 'react';
-import { Leaf, MapPin, Map as MapIcon, DollarSign, Star, Camera, Truck, X, Phone, CheckCircle, Package } from 'lucide-react';
+import { Leaf, MapPin, Map as MapIcon, DollarSign, Star, Camera, Truck, X, Phone, CheckCircle, Package, MapPinned, Loader2 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -19,9 +19,35 @@ const RecycleMarketplace = () => {
   const [wasteType, setWasteType] = useState('Plastic');
   const [quantity, setQuantity] = useState('');
   const [pickupAddress, setPickupAddress] = useState(user?.area || '');
+  const [coords, setCoords] = useState({ lat: null, lng: null });
+  const [locationLoading, setLocationLoading] = useState(false);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
+
+  const fetchLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported on this device.');
+      return;
+    }
+
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setCoords({ lat: latitude, lng: longitude });
+        setPickupAddress(`GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+        toast.success('Location fetched successfully ✅');
+        setLocationLoading(false);
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        toast.error('Unable to fetch location. Please allow GPS access.');
+        setLocationLoading(false);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
 
   useEffect(() => {
     fetchData();
@@ -77,9 +103,14 @@ const RecycleMarketplace = () => {
       formData.append('quantity', quantity);
       formData.append('pickupAddress', pickupAddress);
       formData.append('estimatedPrice', calculateEstimate());
+      if (!coords.lat || !coords.lng) {
+        toast.error('Please fetch your location first by clicking "Auto Fetch Location".');
+        setSubmitting(false);
+        return;
+      }
       formData.append('notes', notes);
-      formData.append('lat', 28.6139);
-      formData.append('lng', 77.2090);
+      formData.append('lat', coords.lat);
+      formData.append('lng', coords.lng);
 
       await api.post(`/api/recycle/request`, formData, {
         headers: { 
@@ -94,6 +125,7 @@ const RecycleMarketplace = () => {
       setPreview('');
       setQuantity('');
       setNotes('');
+      setCoords({ lat: null, lng: null });
       fetchData(); // refresh history and stats
     } catch (err) {
       toast.error('Failed to submit request');
@@ -340,17 +372,37 @@ const RecycleMarketplace = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Pickup Address</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input 
-                    type="text" 
-                    value={pickupAddress} 
-                    onChange={(e) => setPickupAddress(e.target.value)}
-                    placeholder="Full pickup address"
-                    className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] outline-none"
-                    required
-                  />
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input 
+                      type="text" 
+                      value={pickupAddress} 
+                      onChange={(e) => setPickupAddress(e.target.value)}
+                      placeholder="Full pickup address"
+                      className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] outline-none"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={fetchLocation}
+                    disabled={locationLoading}
+                    className="flex items-center justify-center px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-md font-medium text-xs hover:bg-blue-100 transition-colors disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {locationLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <MapPinned className="w-4 h-4 mr-2" />
+                    )}
+                    {locationLoading ? 'Fetching...' : 'Auto Fetch Location'}
+                  </button>
                 </div>
+                {coords.lat && coords.lng && (
+                  <p className="text-xs text-green-600 mt-1.5 font-medium flex items-center">
+                    ✓ Coordinates acquired: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+                  </p>
+                )}
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 flex justify-between items-center">

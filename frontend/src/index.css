@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,31 +6,9 @@
 
 @layer base {
   body {
-    font-family: 'Outfit', sans-serif;
-    @apply bg-gray-50 text-gray-900 antialiased;
+    font-family: 'Inter', sans-serif;
+    @apply bg-[#F9FAFB] text-gray-900 antialiased;
   }
-}
-
-/* Premium Glassmorphism Effect */
-.glass {
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-}
-
-/* Dark mode glass */
-.dark .glass {
-  background: rgba(17, 24, 39, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-}
-
-.premium-card {
-  @apply rounded-2xl p-6 glass transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
 }
 
 /* Custom scrollbar */
@@ -39,51 +17,29 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #10b981;
+  background: #E5E7EB;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #059669;
+  background: #D1D5DB;
 }
 
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-track {
-  background: #374151;
+/* Base Form Input Focus */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #10B981 !important;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #10b981;
+/* Utility to hide scrollbar but allow scroll */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-
-/* Animation utilities */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #10b981, #3b82f6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Dark mode overrides */
-.dark {
-  color-scheme: dark;
-}
-
-.dark body {
-  background-color: #111827;
-  color: #f9fafb;
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

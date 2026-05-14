@@ -1,17 +1,16 @@
 import api from "@/config/api";
 import { useContext, useEffect, useState, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Bell, User, LogOut, Menu, Moon, Sun, Settings, ChevronDown } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Bell, User, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
-import axios from 'axios';
 
 const Topbar = () => {
   const { user, logout, token } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -26,17 +25,7 @@ const Topbar = () => {
   }, []);
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('darkMode', darkMode);
-  }, [darkMode]);
-
-  useEffect(() => {
     if (user && token) {
-      // Fetch initial notifications
       api.get(`/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
@@ -44,7 +33,6 @@ const Topbar = () => {
         setUnreadCount(unread);
       }).catch(console.error);
 
-      // Connect Socket
       const socket = io(import.meta.env.VITE_API_URL);
       socket.emit('join', user.id);
 
@@ -53,9 +41,10 @@ const Topbar = () => {
         toast(notification.message, {
           icon: notification.type === 'Task' ? '🚧' : '🔔',
           style: {
-            borderRadius: '10px',
-            background: '#333',
-            color: '#fff',
+            borderRadius: '4px',
+            background: '#fff',
+            color: '#111827',
+            border: '1px solid #E5E7EB'
           },
         });
       });
@@ -69,64 +58,58 @@ const Topbar = () => {
     navigate('/login');
   };
 
+  // Convert pathname to title
+  const getPageTitle = () => {
+    const path = location.pathname.split('/')[1] || 'Dashboard';
+    return path.charAt(0).toUpperCase() + path.slice(1).replace('-', ' ');
+  };
+
   return (
-    <header className="h-16 bg-white/70 dark:bg-gray-900/80 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-6 z-10 sticky top-0 transition-colors">
-      <div className="flex items-center md:hidden font-black text-xl bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-        SmartWasteX
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
+      <div className="flex items-center">
+        <h2 className="text-xl font-bold text-gray-900 tracking-tight">{getPageTitle()}</h2>
       </div>
-      <div className="hidden md:block">
-        <h2 className="text-xl font-bold text-gray-800 tracking-tight">Dashboard</h2>
-      </div>
-      <div className="flex items-center space-x-5">
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="p-2 text-gray-500 hover:text-primary transition-colors"
-        >
-          {darkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
-        </button>
-        <Link to="/notifications" className="p-2 text-gray-500 hover:text-primary transition-colors relative">
-          <Bell className="w-6 h-6" />
+      
+      <div className="flex items-center space-x-6">
+        <Link to="/notifications" className="relative text-gray-500 hover:text-gray-900 transition-colors">
+          <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-white">
-              {unreadCount}
-            </span>
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
           )}
         </Link>
-        <div className="relative border-l pl-5 border-gray-200 dark:border-gray-700" ref={dropdownRef}>
+
+        <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center space-x-3 focus:outline-none"
+            className="flex items-center space-x-2 focus:outline-none group"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-green-600 flex items-center justify-center text-white shadow-md shadow-green-200 dark:shadow-none">
-              <User className="w-5 h-5" />
+            <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-gray-600 border border-gray-200 uppercase text-sm font-semibold group-hover:border-gray-300 transition-colors">
+              {user?.name?.charAt(0) || 'U'}
             </div>
-            <div className="hidden md:block text-left">
-              <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{user?.name}</p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role?.replace('_', ' ')}</p>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-3 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden transform origin-top-right transition-all animate-in fade-in zoom-in-95">
-              <div className="p-2">
-                <Link 
-                  to="/settings" 
-                  onClick={() => setIsDropdownOpen(false)}
-                  className="flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  <Settings className="w-4 h-4 mr-3 text-gray-400" />
-                  Profile Settings
-                </Link>
-                <div className="h-px bg-gray-100 dark:bg-gray-700 my-1"></div>
-                <button 
-                  onClick={handleLogout} 
-                  className="flex items-center w-full px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                >
-                  <LogOut className="w-4 h-4 mr-3" />
-                  Logout
-                </button>
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-sm border border-gray-200 py-1 z-50">
+              <div className="px-4 py-2 border-b border-gray-100 mb-1">
+                <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
+                <p className="text-xs text-gray-500 capitalize">{user?.role?.replace('_', ' ')}</p>
               </div>
+              <Link 
+                to="/settings" 
+                onClick={() => setIsDropdownOpen(false)}
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                <Settings className="w-4 h-4 mr-2 text-gray-400" />
+                Settings
+              </Link>
+              <button 
+                onClick={handleLogout} 
+                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </button>
             </div>
           )}
         </div>
@@ -136,3 +119,4 @@ const Topbar = () => {
 };
 
 export default Topbar;
+

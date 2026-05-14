@@ -2,11 +2,8 @@ import api from "@/config/api";
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import GlassCard from '../components/GlassCard';
-import AnimatedButton from '../components/AnimatedButton';
-import { ShieldCheck, Upload, FileText, User } from 'lucide-react';
+import { ShieldCheck, Upload, FileText, User, Clock, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
-import axios from 'axios';
 
 const KYCForm = () => {
   const { user, token, checkAuth } = useContext(AuthContext);
@@ -89,7 +86,7 @@ const KYCForm = () => {
       await api.post(`/api/kyc/submit`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('KYC Submitted Successfully! Pending Admin Approval.');
+      toast.success('KYC Submitted Successfully!');
       setStatus('pending');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Submission failed');
@@ -101,30 +98,35 @@ const KYCForm = () => {
   if (status === 'pending') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <GlassCard className="max-w-md w-full text-center py-12">
-          <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Clock className="w-10 h-10 text-yellow-500" />
+        <div className="max-w-md w-full bg-white border border-gray-200 rounded-xl shadow-sm text-center py-12 px-8">
+          <div className="w-16 h-16 bg-yellow-50 border border-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Clock className="w-8 h-8 text-yellow-500" />
           </div>
-          <h2 className="text-2xl font-black text-gray-800 mb-2">KYC Under Review</h2>
-          <p className="text-gray-500">Your documents have been submitted and are pending admin approval. You will be notified once verified.</p>
-          <AnimatedButton variant="secondary" className="mt-8 mx-auto" onClick={() => navigate('/login')}>Back to Login</AnimatedButton>
-        </GlassCard>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">KYC Under Review</h2>
+          <p className="text-sm text-gray-500 mb-8">Your documents have been submitted and are pending admin approval. You will be notified once verified.</p>
+          <button 
+            className="w-full px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
+            onClick={() => navigate('/login')}
+          >
+            Back to Login
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 md:p-6">
-      <GlassCard className="max-w-3xl w-full">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl w-full bg-white border border-gray-200 rounded-xl shadow-sm p-8">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/30">
-            <ShieldCheck className="w-8 h-8 text-white" />
+          <div className="w-12 h-12 bg-[#10B981]/10 rounded-xl flex items-center justify-center mx-auto mb-4 border border-[#10B981]/20">
+            <ShieldCheck className="w-6 h-6 text-[#10B981]" />
           </div>
-          <h2 className="text-3xl font-black text-gray-800 dark:text-white tracking-tight">Complete Your KYC</h2>
-          <p className="text-gray-500 mt-2">Required for all {user?.role?.replace('_', ' ')} accounts before accessing the dashboard.</p>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Complete Your KYC</h2>
+          <p className="text-sm text-gray-500 mt-1">Required for all {user?.role?.replace('_', ' ')} accounts before accessing the dashboard.</p>
           
           {status === 'rejected' && (
-            <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 font-semibold">
+            <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md text-sm font-medium border border-red-200">
               Your previous KYC submission was rejected. Please re-submit with correct details.
             </div>
           )}
@@ -133,115 +135,112 @@ const KYCForm = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Full Name</label>
               <div className="relative">
-                <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                <User className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] outline-none transition-all"
                   required
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Aadhaar / ID Number</label>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Aadhaar / ID Number</label>
               <input
                 type="text"
                 name="aadhaarNumber"
                 value={formData.aadhaarNumber}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] outline-none transition-all"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Mobile Number</label>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Mobile Number</label>
               <input
                 type="text"
                 name="mobile"
                 value={formData.mobile}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] outline-none transition-all"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Assigned Area</label>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Assigned Area</label>
               <input
                 type="text"
                 name="area"
                 value={formData.area}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] outline-none transition-all"
                 required
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Full Address</label>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Full Address</label>
               <textarea
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
                 rows="2"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
+                className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] outline-none transition-all resize-none"
                 required
               ></textarea>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-             <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-6 text-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+             <div className={`relative border-2 border-dashed rounded-xl p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer group ${formData.profilePhotoUrl ? 'border-[#10B981] bg-green-50/30' : 'border-gray-300'}`}>
                <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'photo')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                {formData.profilePhotoUrl ? (
                  <div className="flex flex-col items-center">
-                   <img src={formData.profilePhotoUrl} alt="Profile" className="w-16 h-16 rounded-full object-cover mb-2 border-2 border-primary" />
-                   <p className="text-sm font-bold text-green-600">Photo Uploaded</p>
+                   <img src={formData.profilePhotoUrl} alt="Profile" className="w-12 h-12 rounded-full object-cover mb-2 border border-gray-200" />
+                   <p className="text-xs font-bold text-[#10B981]">Photo Uploaded</p>
                  </div>
                ) : (
                  <>
-                   <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                     {uploadingPhoto ? <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-500"></div> : <Camera className="w-6 h-6 text-blue-500" />}
-                   </div>
-                   <p className="text-sm font-bold text-gray-700 dark:text-gray-300">{uploadingPhoto ? 'Uploading...' : 'Upload Profile Photo'}</p>
-                   <p className="text-xs text-gray-500 mt-1">Click or drag image here</p>
+                   <Camera className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                   <p className="text-xs font-bold text-gray-700">{uploadingPhoto ? 'Uploading...' : 'Upload Profile Photo'}</p>
+                   <p className="text-[10px] text-gray-500 mt-1">Click or drag image here</p>
                  </>
                )}
              </div>
              
-             <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-6 text-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group">
+             <div className={`relative border-2 border-dashed rounded-xl p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer group ${formData.documentUrl ? 'border-[#10B981] bg-green-50/30' : 'border-gray-300'}`}>
                <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, 'doc')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                {formData.documentUrl ? (
                  <div className="flex flex-col items-center">
-                   <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-2">
-                     <FileText className="w-8 h-8 text-green-600" />
-                   </div>
-                   <p className="text-sm font-bold text-green-600">Document Uploaded</p>
+                   <FileText className="w-8 h-8 text-[#10B981] mb-2" />
+                   <p className="text-xs font-bold text-[#10B981]">Document Uploaded</p>
                  </div>
                ) : (
                  <>
-                   <div className="w-12 h-12 bg-green-50 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                     {uploadingDoc ? <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-500"></div> : <FileText className="w-6 h-6 text-green-500" />}
-                   </div>
-                   <p className="text-sm font-bold text-gray-700 dark:text-gray-300">{uploadingDoc ? 'Uploading...' : 'Upload Aadhaar / ID Card'}</p>
-                   <p className="text-xs text-gray-500 mt-1">PDF or Image</p>
+                   <FileText className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                   <p className="text-xs font-bold text-gray-700">{uploadingDoc ? 'Uploading...' : 'Upload Aadhaar / ID Card'}</p>
+                   <p className="text-[10px] text-gray-500 mt-1">PDF or Image</p>
                  </>
                )}
              </div>
           </div>
 
-          <AnimatedButton type="submit" variant="primary" className="w-full mt-8" disabled={loading}>
-            {loading ? 'Submitting...' : 'Submit Documents for Verification'}
-          </AnimatedButton>
+          <div className="pt-4 border-t border-gray-100">
+            <button 
+              type="submit" 
+              className="w-full px-4 py-2.5 bg-[#10B981] text-white rounded-md text-sm font-medium hover:bg-[#059669] transition-colors disabled:opacity-50" 
+              disabled={loading}
+            >
+              {loading ? 'Submitting...' : 'Submit Documents for Verification'}
+            </button>
+          </div>
         </form>
-      </GlassCard>
+      </div>
     </div>
   );
 };
-
-// Also import Clock for the pending screen at the top
-import { Clock, Camera } from 'lucide-react';
 
 export default KYCForm;

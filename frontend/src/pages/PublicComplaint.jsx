@@ -1,13 +1,9 @@
 import api from "@/config/api";
 import { useState, useContext, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Camera, MapPin, Send, AlertTriangle, Image as ImageIcon } from 'lucide-react';
+import { Camera, MapPin, Image as ImageIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import GlassCard from '../components/GlassCard';
-import AnimatedButton from '../components/AnimatedButton';
 
 const PublicComplaint = () => {
   const { token, user } = useContext(AuthContext);
@@ -51,7 +47,7 @@ const PublicComplaint = () => {
         }
       });
 
-      toast.success('Complaint submitted successfully! AI will analyze urgency.');
+      toast.success('Complaint submitted successfully!');
       setAiResult(res.data.data?.aiAnalysis ?? null);
       reset();
       setImagePreview('');
@@ -63,45 +59,41 @@ const PublicComplaint = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center space-x-3 mb-8">
-        <div className="w-12 h-12 bg-red-100 text-red-500 rounded-2xl flex items-center justify-center">
-          <AlertTriangle className="w-6 h-6" />
-        </div>
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Report Garbage Issue</h1>
-          <p className="text-gray-500 text-sm">Help keep our city clean by reporting overflowing or uncollected garbage.</p>
+          <h1 className="text-xl font-bold text-gray-900">Report Issue</h1>
+          <p className="text-sm text-gray-500 mt-1">Submit a new garbage complaint.</p>
         </div>
       </div>
 
-      <GlassCard className="p-8">
+      <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            {/* Left Column - Details */}
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Issue Title</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Issue Title</label>
                 <input
                   type="text"
                   {...register('title', { required: 'Title is required' })}
-                  className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white/50 backdrop-blur-sm transition-all"
+                  className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981]"
                   placeholder="e.g. Overflowing bin near park"
                 />
                 {errors.title && <span className="text-xs text-red-500 mt-1">{errors.title.message}</span>}
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Area / Location</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Area / Location</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <MapPin className="h-5 w-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MapPin className="h-4 w-4 text-gray-400" />
                   </div>
                   <input
                     type="text"
                     defaultValue={user?.area}
                     {...register('area')}
-                    className="block w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white/50 backdrop-blur-sm transition-all"
+                    className="block w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981]"
                     placeholder="e.g. Anand Nagar (Optional)"
                   />
                 </div>
@@ -109,35 +101,32 @@ const PublicComplaint = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Description</label>
                 <textarea
                   {...register('description', { required: 'Description is required' })}
                   rows="4"
-                  className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white/50 backdrop-blur-sm transition-all resize-none"
+                  className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] resize-none"
                   placeholder="Provide more details about the garbage location and severity..."
                 ></textarea>
                 {errors.description && <span className="text-xs text-red-500 mt-1">{errors.description.message}</span>}
               </div>
             </div>
 
-            {/* Right Column - Image Upload */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Evidence Image</label>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Evidence Image</label>
               <div 
-                className={`h-[300px] border-2 border-dashed rounded-3xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all overflow-hidden ${imagePreview ? 'border-primary bg-green-50/50' : 'border-gray-300 hover:bg-gray-50 hover:border-gray-400'}`}
+                className={`h-[268px] border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all overflow-hidden ${imagePreview ? 'border-[#10B981] bg-green-50/30' : 'border-gray-300 hover:bg-gray-50'}`}
                 onClick={() => fileInputRef.current.click()}
               >
                 {imagePreview ? (
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-2xl shadow-sm" />
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-contain rounded-md" />
                 ) : (
                   <>
-                    <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 shadow-sm">
-                      <Camera className="w-10 h-10" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-700 mb-1">Capture Image</h3>
-                    <p className="text-sm text-gray-500 mb-4 px-8">Take a photo of the garbage so our AI can analyze the severity level.</p>
-                    <span className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-600 shadow-sm">
-                      <ImageIcon className="w-4 h-4 mr-2" /> Browse Files
+                    <Camera className="w-8 h-8 text-gray-400 mb-3" />
+                    <h3 className="text-sm font-medium text-gray-700 mb-1">Click to upload image</h3>
+                    <p className="text-xs text-gray-500 mb-4 px-8">Take a photo of the garbage for AI analysis.</p>
+                    <span className="inline-flex items-center px-3 py-1.5 bg-white border border-gray-200 rounded-md text-xs font-medium text-gray-600 shadow-sm hover:bg-gray-50">
+                      <ImageIcon className="w-3.5 h-3.5 mr-2" /> Browse Files
                     </span>
                   </>
                 )}
@@ -151,92 +140,57 @@ const PublicComplaint = () => {
                 onChange={handleImageChange}
               />
             </div>
-
           </div>
 
-          <div className="pt-6 border-t border-gray-100 dark:border-gray-800 flex justify-end">
-            <AnimatedButton
+          <div className="pt-6 border-t border-gray-100 flex justify-end">
+            <button
               type="submit"
-              variant="primary"
               disabled={loading}
-              className="px-8 py-4 text-lg w-full sm:w-auto relative overflow-hidden"
+              className="px-6 py-2 bg-[#10B981] text-white rounded-md font-medium text-sm hover:bg-[#059669] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center w-full sm:w-auto"
             >
-              {loading ? (
-                <div className="flex items-center justify-center w-full">
-                  <div className="absolute inset-0 bg-primary/20 animate-pulse"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-[200%] animate-[shimmer_2s_infinite]"></div>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3 z-10"></div>
-                  <span className="z-10 font-medium tracking-wide">AI analyzing waste...</span>
-                </div>
-              ) : (
-                <><Send className="w-5 h-5 mr-2" /> Submit Report</>
-              )}
-            </AnimatedButton>
+              {loading ? 'Submitting...' : 'Submit Report'}
+            </button>
           </div>
         </form>
-      </GlassCard>
-      {aiResult && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <GlassCard className="p-8 relative overflow-hidden bg-gradient-to-br from-white to-gray-50 border-t-4 border-t-indigo-500 shadow-xl">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <AlertTriangle className="w-32 h-32" />
-            </div>
-            
-            <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <span className="bg-indigo-100 text-indigo-600 p-2 rounded-xl mr-3">
-                <AlertTriangle className="w-6 h-6" />
-              </span>
-              AI Analysis Result
-            </h3>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-                <span className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">Priority</span>
-                <span className={`text-lg font-bold ${
-                  aiResult.priority === 'Emergency' ? 'text-red-600' :
-                  aiResult.priority === 'High' ? 'text-orange-600' :
-                  aiResult.priority === 'Normal' ? 'text-blue-600' : 'text-gray-600'
-                }`}>{aiResult.priority}</span>
-              </div>
-              
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-                <span className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">Waste Level</span>
-                <span className={`text-lg font-bold ${
-                  aiResult.wasteLevel === 'Critical' ? 'text-red-600' :
-                  aiResult.wasteLevel === 'High' ? 'text-orange-600' :
-                  aiResult.wasteLevel === 'Normal' ? 'text-blue-600' : 'text-green-600'
-                }`}>{aiResult.wasteLevel}</span>
-              </div>
-              
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-                <span className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">Pollution Score</span>
-                <span className={`text-2xl font-black ${
-                  aiResult.pollutionScore > 75 ? 'text-red-500' :
-                  aiResult.pollutionScore > 40 ? 'text-yellow-500' : 'text-green-500'
-                }`}>{aiResult.pollutionScore}</span>
-              </div>
-              
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-                <span className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">Overflow</span>
-                <span className={`text-lg font-bold ${aiResult.overflow ? 'text-red-600' : 'text-green-600'}`}>
-                  {aiResult.overflow ? 'Detected' : 'None'}
-                </span>
-              </div>
-            </div>
+      </div>
 
+      {aiResult && (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h3 className="text-lg font-bold text-gray-900 mb-6">AI Analysis Result</h3>
+          
+          <div className="space-y-1 mb-6 max-w-2xl">
+            <div className="flex justify-between items-center py-3 border-b border-gray-100">
+              <span className="text-sm font-medium text-gray-500">Priority</span>
+              <span className="text-sm font-bold text-gray-900">{aiResult.priority}</span>
+            </div>
+            <div className="flex justify-between items-center py-3 border-b border-gray-100">
+              <span className="text-sm font-medium text-gray-500">Waste Level</span>
+              <span className="text-sm font-bold text-gray-900">{aiResult.wasteLevel}</span>
+            </div>
+            <div className="flex justify-between items-center py-3 border-b border-gray-100">
+              <span className="text-sm font-medium text-gray-500">Pollution Score</span>
+              <span className="text-sm font-bold text-gray-900">{aiResult.pollutionScore}</span>
+            </div>
+            <div className="flex justify-between items-center py-3 border-b border-gray-100">
+              <span className="text-sm font-medium text-gray-500">Overflow</span>
+              <span className="text-sm font-bold text-gray-900">{aiResult.overflow ? 'Detected' : 'None'}</span>
+            </div>
+          </div>
+
+          <div className="space-y-3 max-w-2xl">
             {aiResult.recyclable && (
-              <div className="mb-6 bg-green-50 border border-green-200 text-green-700 rounded-2xl px-6 py-4 flex items-center font-medium shadow-sm">
-                <span className="text-2xl mr-3">♻️</span> AI detected recyclable materials in this waste.
+              <div className="w-full bg-green-50 border border-green-200 text-green-700 rounded-md px-3 py-2 text-sm font-medium">
+                ♻️ AI detected recyclable materials
               </div>
             )}
 
             {['Emergency', 'High'].includes(aiResult.priority) && (
-              <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 rounded-2xl px-6 py-4 text-sm font-bold flex items-center shadow-sm">
-                <span className="animate-pulse mr-3 text-xl">🚨</span> Action Required: Alert sent to admin and nearest available worker automatically.
+              <div className="w-full bg-red-50 border border-red-200 text-red-700 rounded-md px-3 py-2 text-sm font-medium">
+                🚨 Alert sent to admin and nearest available worker
               </div>
             )}
-          </GlassCard>
-        </motion.div>
+          </div>
+        </div>
       )}
     </div>
   );

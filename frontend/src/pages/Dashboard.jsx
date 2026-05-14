@@ -1,112 +1,117 @@
 import api from "@/config/api";
 import { useState, useEffect, useContext } from 'react';
-import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
-import GlassCard from '../components/GlassCard';
-import AnimatedButton from '../components/AnimatedButton';
-import { Activity, AlertTriangle, CheckCircle, Clock, Trash2, MapPin, Map as MapIcon, Users, Navigation, Camera, Award, Database } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { Activity, AlertTriangle, CheckCircle, Clock, Trash2, MapPin, Users, Navigation, Camera, Award, Database, BarChart2 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-// Mock Data for Charts
 const mockData = [
-  { name: 'Mon', complaints: 40, overflows: 2 },
-  { name: 'Tue', complaints: 30, overflows: 1 },
-  { name: 'Wed', complaints: 55, overflows: 4 },
-  { name: 'Thu', complaints: 45, overflows: 3 },
-  { name: 'Fri', complaints: 60, overflows: 5 },
-  { name: 'Sat', complaints: 35, overflows: 2 },
-  { name: 'Sun', complaints: 42, overflows: 2 },
+  { name: 'Mon', complaints: 40, overflows: 12 },
+  { name: 'Tue', complaints: 30, overflows: 8 },
+  { name: 'Wed', complaints: 55, overflows: 15 },
+  { name: 'Thu', complaints: 45, overflows: 10 },
+  { name: 'Fri', complaints: 60, overflows: 20 },
+  { name: 'Sat', complaints: 35, overflows: 5 },
+  { name: 'Sun', complaints: 42, overflows: 7 },
 ];
 
-const StatCard = ({ title, value, icon: Icon, color, delay }) => (
-  <GlassCard className="flex items-center justify-between" delay={delay}>
-    <div>
-      <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-1">{title}</p>
-      <h3 className="text-3xl font-black text-gray-800 dark:text-white">{value}</h3>
+const StatCard = ({ title, value, icon: Icon, borderClass, trend }) => (
+  <div className={`bg-white border border-gray-200 rounded-lg p-5 flex flex-col justify-between shadow-sm`}>
+    <div className="flex justify-between items-start mb-4">
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{title}</p>
+      <Icon className={`w-5 h-5 ${borderClass.replace('border-', 'text-')}`} />
     </div>
-    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${color}`}>
-      <Icon className="w-7 h-7 text-white" />
+    <div className="flex items-baseline space-x-2">
+      <h3 className="text-3xl font-bold text-gray-900">{value}</h3>
+      {trend && <span className="text-xs font-medium text-[#10B981] flex items-center">↑ {trend}%</span>}
     </div>
-  </GlassCard>
+  </div>
 );
 
+const StatusBadge = ({ status }) => {
+  let color = 'bg-gray-500';
+  let bg = 'bg-gray-100 border border-gray-200';
+  if (status === 'Resolved' || status === 'Completed' || status === 'approved') {
+    color = 'bg-[#10B981]';
+    bg = 'bg-green-50 text-green-700 border border-green-200';
+  } else if (status === 'In Progress' || status === 'Assigned') {
+    color = 'bg-blue-500';
+    bg = 'bg-blue-50 text-blue-700 border border-blue-200';
+  } else if (status === 'Overflow' || status === 'Emergency' || status === 'rejected') {
+    color = 'bg-red-500';
+    bg = 'bg-red-50 text-red-700 border border-red-200';
+  } else if (status === 'Pending' || status === 'pending') {
+    color = 'bg-yellow-500';
+    bg = 'bg-yellow-50 text-yellow-700 border border-yellow-200';
+  }
+
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${bg}`}>
+      {status}
+    </span>
+  );
+};
+
 const AdminDashboard = ({ reports }) => (
-  <div className="space-y-6">
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+  <div className="space-y-6 max-w-7xl mx-auto pb-10">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-4">
       <div>
-        <h1 className="text-3xl font-black text-gray-800 dark:text-white tracking-tight">Admin Control Center</h1>
-        <p className="text-gray-500 mt-1">Platform overview and AI insights</p>
+        <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-1">Platform overview and AI insights</p>
       </div>
-      <div className="flex space-x-3 w-full md:w-auto">
-        <Link to="/requests" className="flex-1 md:flex-none">
-          <AnimatedButton variant="secondary" className="w-full">Pending Approvals</AnimatedButton>
+      <div className="flex space-x-3 w-full sm:w-auto">
+        <Link to="/requests" className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
+          Pending Approvals
         </Link>
-        <AnimatedButton variant="primary" className="flex-1 md:flex-none">Download Report</AnimatedButton>
+        <button className="px-4 py-2 bg-[#10B981] text-white rounded-md text-sm font-medium hover:bg-[#059669] transition-colors">
+          Download Report
+        </button>
       </div>
     </div>
 
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StatCard title="Total Complaints" value="1,284" icon={Trash2} color="bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-500/40" />
-      <StatCard title="Resolved Issues" value="1,092" icon={CheckCircle} color="bg-gradient-to-br from-primary to-green-600 shadow-green-500/40" />
-      <StatCard title="Active Workers" value="45" icon={Users} color="bg-gradient-to-br from-purple-400 to-purple-600 shadow-purple-500/40" />
-      <StatCard title="AI Emergencies" value={reports?.filter(r => r.status === 'Overflow').length || 12} icon={AlertTriangle} color="bg-gradient-to-br from-red-400 to-red-600 shadow-red-500/40" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatCard title="Total Complaints" value="1,284" icon={Trash2} borderClass="border-blue-500" trend="12" />
+      <StatCard title="Resolved Issues" value="1,092" icon={CheckCircle} borderClass="border-[#10B981]" trend="8" />
+      <StatCard title="Active Workers" value="45" icon={Users} borderClass="border-purple-500" />
+      <StatCard title="AI Emergencies" value={reports?.filter(r => r.status === 'Overflow').length || 12} icon={AlertTriangle} borderClass="border-red-500" trend="3" />
     </div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <GlassCard className="lg:col-span-2 min-h-[400px]">
-        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Complaint Volume & Overflows</h3>
+      <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <h3 className="text-sm font-bold text-gray-900 mb-6 flex items-center"><BarChart2 className="w-4 h-4 mr-2" /> Complaint Volume</h3>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={mockData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorComplaints" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorOverflows" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="name" stroke="#9ca3af" />
-              <YAxis stroke="#9ca3af" />
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }} />
-              <Legend />
-              <Area type="monotone" dataKey="complaints" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorComplaints)" />
-              <Area type="monotone" dataKey="overflows" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorOverflows)" />
-            </AreaChart>
+            <BarChart data={mockData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+              <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} axisLine={false} />
+              <Tooltip cursor={{fill: '#F9FAFB'}} contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', fontSize: '12px' }} />
+              <Bar dataKey="complaints" fill="#9CA3AF" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="overflows" fill="#10B981" radius={[4, 4, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
-      </GlassCard>
+      </div>
 
-      <GlassCard className="flex flex-col">
-        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex justify-between items-center">
-          Live Tracking Reports
-          <Link to="/pickups" className="text-xs text-primary font-bold hover:underline">Control Tasks</Link>
-        </h3>
-        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-          {reports?.length === 0 && <p className="text-sm text-gray-500">No reports generated yet.</p>}
-          {reports?.slice(0, 10).map((report) => (
-            <div key={report._id} className={`flex items-start space-x-4 p-4 rounded-2xl border ${report.status === 'Overflow' || report.status === 'Full' ? 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900/30' : 'bg-blue-50 border-blue-100'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${report.status === 'Overflow' || report.status === 'Full' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                {report.status === 'Overflow' ? <AlertTriangle className="w-5 h-5" /> : <Database className="w-5 h-5" />}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-sm font-bold text-gray-900">Recent AI Reports</h3>
+          <Link to="/pickups" className="text-[10px] uppercase font-bold text-[#10B981] hover:underline tracking-wider">View All</Link>
+        </div>
+        <div className="flex-1 overflow-y-auto space-y-0 divide-y divide-gray-100 pr-2">
+          {reports?.length === 0 && <p className="text-sm text-gray-500 py-4 text-center">No reports generated yet.</p>}
+          {reports?.slice(0, 8).map((report) => (
+            <div key={report._id} className="py-3 flex justify-between items-center hover:bg-[#F9FAFB] transition-colors -mx-4 px-4">
+              <div>
+                <p className="text-sm font-medium text-gray-900">{report.area}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">{report.quantity} kg • {new Date(report.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
               </div>
-              <div className="flex-1">
-                <p className={`text-sm font-bold ${report.status === 'Overflow' || report.status === 'Full' ? 'text-red-900' : 'text-blue-900'}`}>AI Detect: {report.status}</p>
-                <p className={`text-xs mt-1 ${report.status === 'Overflow' || report.status === 'Full' ? 'text-red-700' : 'text-blue-700'}`}>{report.area}</p>
-                <div className="flex justify-between items-center mt-2">
-                  <p className="text-[10px] font-semibold text-gray-600 bg-white px-2 py-0.5 rounded shadow-sm">{report.quantity} kg Waste</p>
-                  <p className="text-[10px] text-gray-500">{new Date(report.timestamp).toLocaleTimeString()}</p>
-                </div>
-              </div>
+              <StatusBadge status={report.status} />
             </div>
           ))}
         </div>
-      </GlassCard>
+      </div>
     </div>
   </div>
 );
@@ -122,78 +127,56 @@ const SocietyDashboard = ({ complaints, rankings, user }) => {
   if (myScore < 20) grade = 'D';
 
   return (
-  <div className="space-y-6">
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+  <div className="space-y-6 max-w-7xl mx-auto pb-10">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-4">
       <div>
-        <h1 className="text-3xl font-black text-gray-800 dark:text-white tracking-tight">Society Monitor</h1>
-        <p className="text-gray-500 mt-1">Keep your area clean and green</p>
+        <h1 className="text-xl font-bold text-gray-900">Society Overview</h1>
+        <p className="text-sm text-gray-500 mt-1">Keep your area clean and green</p>
       </div>
-      <Link to="/upload">
-        <AnimatedButton variant="primary">
-          <Trash2 className="w-5 h-5 mr-2 inline" /> Request Urgent Pickup
-        </AnimatedButton>
+      <Link to="/upload" className="px-4 py-2 bg-[#10B981] text-white rounded-md text-sm font-medium hover:bg-[#059669] transition-colors">
+        Request Pickup
       </Link>
     </div>
 
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StatCard title="Area Score" value={grade} icon={CheckCircle} color="bg-gradient-to-br from-green-400 to-green-600 shadow-green-500/40" />
-      <StatCard title="Total Pickups" value={complaints?.filter(c => c.status === 'Resolved').length || 0} icon={Trash2} color="bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-500/40" />
-      <StatCard title="Active Reports" value={complaints?.filter(c => c.status !== 'Resolved').length || 0} icon={AlertTriangle} color="bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-yellow-500/40" />
-      <StatCard title="Area Rank" value={myRank > 0 ? `#${myRank}` : 'N/A'} icon={Award} color="bg-gradient-to-br from-purple-400 to-purple-600 shadow-purple-500/40" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatCard title="Area Score" value={grade} icon={CheckCircle} borderClass="border-[#10B981]" />
+      <StatCard title="Total Pickups" value={complaints?.filter(c => c.status === 'Resolved').length || 0} icon={Trash2} borderClass="border-blue-500" />
+      <StatCard title="Active Reports" value={complaints?.filter(c => c.status !== 'Resolved').length || 0} icon={AlertTriangle} borderClass="border-yellow-500" />
+      <StatCard title="Area Rank" value={myRank > 0 ? `#${myRank}` : 'N/A'} icon={Award} borderClass="border-purple-500" />
     </div>
 
-    {/* Placeholder for Map and Worker Activity */}
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <GlassCard className="min-h-[300px] flex flex-col items-center justify-center text-center">
-        <MapIcon className="w-16 h-16 text-gray-300 mb-4" />
-        <h3 className="text-xl font-bold text-gray-800 dark:text-white">Live Area Heatmap</h3>
-        <p className="text-gray-500 mt-2 mb-6">Monitor pollution density in your sector.</p>
-        <Link to="/heatmap">
-          <AnimatedButton variant="secondary">View Heatmap</AnimatedButton>
-        </Link>
-      </GlassCard>
-
-      <GlassCard className="min-h-[300px] flex flex-col max-h-[400px]">
-        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Recent Area Activity</h3>
-        <div className="space-y-4 overflow-y-auto pr-2 flex-1">
-          {(!complaints || complaints.length === 0) ? (
-             <p className="text-gray-500 text-center py-4">No recent activity.</p>
-          ) : (
-            complaints.map(comp => (
-              <div key={comp._id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${comp.status === 'Resolved' ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
-                    {comp.status === 'Resolved' ? <CheckCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-gray-800 dark:text-white">{comp.title}</p>
-                    <p className="text-xs text-gray-500">Status: {comp.status}</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end space-y-2">
-                  <span className="text-xs font-semibold text-gray-400">{new Date(comp.createdAt).toLocaleDateString()}</span>
-                  <AnimatedButton 
-                    variant="secondary" 
-                    className="text-xs py-1 px-3"
-                    onClick={() => {
-                      let msg = `TRACKING REPORT\n\nTitle: ${comp.title}\nStatus: ${comp.status}\nArea: ${comp.area}\nPriority: ${comp.aiAnalysis?.priority || 'Normal'}`;
-                      if (comp.assignedTask && comp.assignedTask.worker) {
-                        msg += `\n\nAssigned Worker: ${comp.assignedTask.worker.name}`;
-                        msg += `\nTask Status: ${comp.assignedTask.status}`;
-                      } else {
-                        msg += `\n\nWorker Allocation: Pending/Searching...`;
-                      }
-                      window.alert(msg);
-                    }}
-                  >
-                    Track Report
-                  </AnimatedButton>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </GlassCard>
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200 bg-white">
+        <h3 className="text-sm font-bold text-gray-900">Recent Area Activity</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-200">
+              <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Title</th>
+              <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
+              <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+              <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {(!complaints || complaints.length === 0) ? (
+              <tr><td colSpan="4" className="px-6 py-8 text-center text-gray-500 text-sm">No recent activity.</td></tr>
+            ) : (
+              complaints.map(comp => (
+                <tr key={comp._id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{comp.title}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{new Date(comp.createdAt).toLocaleDateString()}</td>
+                  <td className="px-6 py-4"><StatusBadge status={comp.status} /></td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="text-[10px] font-bold text-[#10B981] hover:text-[#059669] uppercase tracking-wider">Track</button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 );
@@ -240,152 +223,115 @@ const WorkerDashboard = ({ tasks }) => {
   };
 
   return (
-  <div className="space-y-6">
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+  <div className="space-y-6 max-w-7xl mx-auto pb-10">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-4">
       <div>
-        <h1 className="text-3xl font-black text-gray-800 dark:text-white tracking-tight">Worker Portal</h1>
-        <p className="text-gray-500 mt-1">Your daily tasks and route</p>
+        <h1 className="text-xl font-bold text-gray-900">Worker Portal</h1>
+        <p className="text-sm text-gray-500 mt-1">Your daily tasks and route</p>
       </div>
-      <AnimatedButton onClick={toggleStatus} variant={isOnline ? "secondary" : "success"}>
+      <button 
+        onClick={toggleStatus} 
+        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${isOnline ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50' : 'bg-[#10B981] text-white hover:bg-[#059669]'}`}
+      >
         {isOnline ? 'End Shift' : 'Start Shift'}
-      </AnimatedButton>
+      </button>
     </div>
 
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      <StatCard title="Tasks Today" value={tasks?.length || 0} icon={Activity} color="bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-500/40" />
-      <StatCard title="Completed" value={tasks?.filter(t => t.status === 'Completed').length || 0} icon={CheckCircle} color="bg-gradient-to-br from-green-400 to-green-600 shadow-green-500/40" />
-      <StatCard title="Performance" value="94%" icon={Award} color="bg-gradient-to-br from-purple-400 to-purple-600 shadow-purple-500/40" />
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <StatCard title="Tasks Today" value={tasks?.length || 0} icon={Activity} borderClass="border-blue-500" />
+      <StatCard title="Completed" value={tasks?.filter(t => t.status === 'Completed').length || 0} icon={CheckCircle} borderClass="border-[#10B981]" />
+      <StatCard title="Performance" value="94%" icon={Award} borderClass="border-purple-500" />
     </div>
 
-    <GlassCard>
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Assigned Tasks</h3>
-      <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-        {(!tasks || tasks.length === 0) && (
-          <p className="text-gray-500 text-center py-4">No tasks assigned to you right now.</p>
-        )}
-        {tasks?.map(task => (
-          <div key={task._id} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
-            <div className="flex items-start space-x-4">
-               <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                 {task.complaint?.image ? (
-                   <img src={task.complaint.image} alt="Garbage" className="w-full h-full object-cover" />
-                 ) : (
-                   <div className="w-full h-full flex items-center justify-center bg-gray-200"><Trash2 className="w-5 h-5 text-gray-400" /></div>
-                 )}
-               </div>
-               <div>
-                 <div className="flex items-center gap-2 mb-1">
-                   <span className={`px-2 py-1 text-[10px] font-black uppercase rounded-md tracking-wider ${
-                     task.priority === 'Emergency' ? 'bg-red-100 text-red-700' :
-                     task.priority === 'High' ? 'bg-orange-100 text-orange-700' :
-                     'bg-blue-100 text-blue-700'
-                   }`}>{task.priority}</span>
-                   <span className="px-2 py-1 bg-gray-100 text-gray-700 text-[10px] font-black uppercase rounded-md tracking-wider">{task.status}</span>
-                 </div>
-                 <h4 className="font-bold text-gray-900 dark:text-white">{task.title}</h4>
-                 <p className="text-xs text-gray-500 mt-1 flex items-center"><MapPin className="w-3 h-3 mr-1" /> {task.area}</p>
-                 <p className="text-xs text-gray-400 mt-1">{task.complaint?.description}</p>
-               </div>
-            </div>
-            <div className="flex w-full md:w-auto gap-2">
-              <button 
-                onClick={() => trackTask(task)}
-                className="flex-1 md:flex-none text-sm py-2 px-4 rounded-xl font-bold transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
-              >
-                Details
-              </button>
-              <Link to="/heatmap" className="flex-1 md:flex-none">
-                <AnimatedButton variant="secondary" className="w-full text-sm py-2">View Map</AnimatedButton>
-              </Link>
-              {task.status === 'Pending' && (
-                <AnimatedButton onClick={() => startTask(task._id)} variant="primary" className="flex-1 md:flex-none text-sm py-2">Accept Task</AnimatedButton>
-              )}
-              {task.status === 'In Progress' && (
-                <AnimatedButton onClick={() => completeTask(task._id)} variant="success" className="flex-1 md:flex-none text-sm py-2">Mark Complete</AnimatedButton>
-              )}
-            </div>
-          </div>
-        ))}
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <h3 className="text-sm font-bold text-gray-900">Assigned Tasks</h3>
       </div>
-    </GlassCard>
+      <div className="p-0">
+        {(!tasks || tasks.length === 0) ? (
+          <p className="text-gray-500 text-center text-sm py-8">No tasks assigned.</p>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {tasks?.map(task => (
+              <div key={task._id} className="p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 rounded border border-gray-200 overflow-hidden bg-white flex-shrink-0 flex items-center justify-center">
+                     {task.complaint?.image ? (
+                       <img src={task.complaint.image} alt="Task" className="w-full h-full object-cover" />
+                     ) : (
+                       <Trash2 className="w-5 h-5 text-gray-400" />
+                     )}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900">{task.title}</h4>
+                    <p className="text-xs text-gray-500 mt-1 flex items-center"><MapPin className="w-3 h-3 mr-1" /> {task.area}</p>
+                    <div className="mt-2 flex space-x-2">
+                      <StatusBadge status={task.status} />
+                      {task.priority === 'Emergency' && <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 uppercase tracking-wider">Emergency</span>}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  {task.status === 'Pending' && (
+                    <button onClick={() => startTask(task._id)} className="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">Accept</button>
+                  )}
+                  {task.status === 'In Progress' && (
+                    <button onClick={() => completeTask(task._id)} className="flex-1 sm:flex-none px-4 py-2 bg-[#10B981] text-white rounded-md text-sm font-medium hover:bg-[#059669] transition-colors">Complete</button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   </div>
 );
 };
 
 const PublicDashboard = ({ complaints }) => (
-  <div className="space-y-6 max-w-5xl mx-auto">
-    {/* Hero Section */}
-    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-primary to-blue-600 text-white p-8 md:p-12 shadow-2xl shadow-primary/20">
-      <div className="relative z-10 max-w-lg">
-        <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">Help keep our city clean.</h1>
-        <p className="text-blue-50 text-lg mb-8">Report garbage, track cleanup trucks in real-time, and make your area a better place.</p>
-        <Link to="/complaint">
-          <AnimatedButton variant="secondary" className="bg-white text-primary border-none text-lg px-8 py-4 shadow-xl">
-            <Camera className="w-6 h-6" /> Report Garbage Now
-          </AnimatedButton>
+  <div className="space-y-6 max-w-5xl mx-auto pb-10">
+    <div className="bg-[#0F1117] rounded-xl p-8 sm:p-12 text-white relative overflow-hidden border border-gray-800 shadow-md">
+      <div className="relative z-10 max-w-xl">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2 tracking-tight">Help keep our city clean.</h1>
+        <p className="text-gray-400 text-sm mb-6">Report garbage, track cleanup trucks in real-time, and make your area a better place.</p>
+        <Link to="/complaint" className="inline-block px-5 py-2.5 bg-[#10B981] text-white rounded-md text-sm font-medium hover:bg-[#059669] transition-colors shadow-sm">
+          Report Garbage
         </Link>
       </div>
-      {/* Decorative Circles */}
-      <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-20 -mb-20 w-60 h-60 bg-blue-400 opacity-20 rounded-full blur-2xl"></div>
+      <div className="absolute top-0 right-0 p-8 opacity-[0.05] pointer-events-none hidden sm:block">
+         <Navigation className="w-64 h-64" />
+      </div>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <GlassCard className="flex flex-col items-center justify-center text-center py-10">
-        <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6">
-          <Navigation className="w-10 h-10 text-blue-500" />
-        </div>
-        <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Live Truck Tracking</h3>
-        <p className="text-gray-500 px-6 mb-6">See where the nearest garbage truck is and its ETA to your location.</p>
-        <Link to="/heatmap">
-          <AnimatedButton variant="primary">Open Live Map</AnimatedButton>
-        </Link>
-      </GlassCard>
-
-      <GlassCard className="flex flex-col max-h-[400px]">
-        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Your Recent Reports</h3>
-        <div className="flex-1 overflow-y-auto pr-2 space-y-3">
-          {(!complaints || complaints.length === 0) ? (
-            <div className="flex flex-col items-center justify-center text-center text-gray-500 py-10">
-              <CheckCircle className="w-16 h-16 text-gray-200 mb-4" />
-              <p>You haven't reported any garbage yet.</p>
-              <p className="text-sm mt-1">Thank you for keeping the city clean!</p>
-            </div>
-          ) : (
-            complaints.map(comp => (
-              <div 
-                key={comp._id} 
-                className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => {
-                  let msg = `TRACKING REPORT\n\nTitle: ${comp.title}\nStatus: ${comp.status}\nArea: ${comp.area}\nPriority: ${comp.aiAnalysis?.priority || 'Normal'}`;
-                  if (comp.assignedTask && comp.assignedTask.worker) {
-                    msg += `\n\nAssigned Worker: ${comp.assignedTask.worker.name}`;
-                    msg += `\nTask Status: ${comp.assignedTask.status}`;
-                  } else {
-                    msg += `\n\nWorker Allocation: Pending/Searching...`;
-                  }
-                  window.alert(msg);
-                }}
-              >
-                <div>
-                  <h4 className="font-bold text-sm text-gray-800 dark:text-white truncate max-w-[150px]">{comp.title}</h4>
-                  <p className="text-xs text-gray-500 flex items-center mt-1"><MapPin className="w-3 h-3 mr-1" /> {comp.area}</p>
-                </div>
-                <div className="text-right flex flex-col items-end">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${
-                    comp.status === 'Resolved' ? 'bg-green-100 text-green-700' :
-                    comp.status === 'Assigned' ? 'bg-blue-100 text-blue-700' :
-                    'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {comp.status}
-                  </span>
-                  <p className="text-[10px] text-gray-400 mt-2 font-bold underline">Track Report</p>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </GlassCard>
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+        <h3 className="text-sm font-bold text-gray-900">Your Reports</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-white border-b border-gray-200">
+              <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Title</th>
+              <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Area</th>
+              <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {(!complaints || complaints.length === 0) ? (
+              <tr><td colSpan="3" className="px-6 py-8 text-center text-gray-500 text-sm">No reports filed yet.</td></tr>
+            ) : (
+              complaints.map(comp => (
+                <tr key={comp._id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{comp.title}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{comp.area}</td>
+                  <td className="px-6 py-4"><StatusBadge status={comp.status} /></td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 );
@@ -428,10 +374,10 @@ const Dashboard = () => {
     if (user) fetchDashboardData();
   }, [user]);
 
-  if (!user) return <div className="p-8 text-center"><p className="animate-pulse">Loading dashboard...</p></div>;
+  if (!user) return <div className="p-8 text-center"><p className="text-sm text-gray-500">Loading dashboard...</p></div>;
 
   return (
-    <div className="animate-fade-in">
+    <div className="p-6">
       {user.role === 'admin' && <AdminDashboard reports={reports} />}
       {user.role === 'society_head' && <SocietyDashboard complaints={complaints} rankings={rankings} user={user} />}
       {user.role === 'worker' && <WorkerDashboard tasks={tasks} />}

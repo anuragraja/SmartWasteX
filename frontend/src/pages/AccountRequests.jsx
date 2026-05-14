@@ -1,8 +1,6 @@
 import api from "@/config/api";
 import { useState, useEffect, useContext } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, Shield, User, MapPin, FileText, Check, Clock } from 'lucide-react';
-import axios from 'axios';
+import { CheckCircle, XCircle, Shield, User, MapPin, FileText } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -60,25 +58,25 @@ const AccountRequests = () => {
     }
   };
 
-  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>;
+  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#10B981]"></div></div>;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Account & KYC Approval Queue</h1>
-          <p className="text-gray-500 text-sm mt-1">Review and manage access and documents for Workers and Society Heads.</p>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Account & KYC Queue</h1>
+          <p className="text-sm text-gray-500 mt-1">Review and manage access and documents.</p>
         </div>
-        <div className="flex p-1 bg-gray-100 rounded-xl">
+        <div className="flex p-1 bg-gray-100 rounded-lg border border-gray-200">
           <button 
             onClick={() => setActiveTab('login')}
-            className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'login' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all ${activeTab === 'login' ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
           >
             Login Requests
           </button>
           <button 
             onClick={() => setActiveTab('kyc')}
-            className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'kyc' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all ${activeTab === 'kyc' ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
           >
             KYC Requests
           </button>
@@ -87,156 +85,140 @@ const AccountRequests = () => {
 
       {activeTab === 'login' ? (
         requests.length === 0 ? (
-          <div className="glass p-12 rounded-3xl flex flex-col items-center text-center opacity-70">
-            <Shield className="w-16 h-16 text-gray-300 mb-4" />
-            <h3 className="text-xl font-bold text-gray-600 mb-2">No Login Requests</h3>
-            <p className="text-gray-400">All account login requests have been processed.</p>
+          <div className="bg-white border border-gray-200 p-12 rounded-xl flex flex-col items-center text-center shadow-sm">
+            <Shield className="w-12 h-12 text-gray-300 mb-4" />
+            <h3 className="text-base font-bold text-gray-900 mb-1">No Login Requests</h3>
+            <p className="text-sm text-gray-500">All account login requests have been processed.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <AnimatePresence>
-            {requests.map((req, index) => (
-              <motion.div
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {requests.map((req) => (
+              <div
                 key={req._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="glass p-6 rounded-3xl relative overflow-hidden"
+                className="bg-white border border-gray-200 p-5 rounded-xl flex flex-col shadow-sm"
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
-                
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-sm">
-                    <User className="w-6 h-6 text-gray-500" />
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                    <User className="w-5 h-5 text-gray-500" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900">{req.name}</h3>
-                    <p className="text-sm text-gray-500">{req.email}</p>
+                    <h3 className="text-sm font-bold text-gray-900">{req.name}</h3>
+                    <p className="text-xs text-gray-500">{req.email}</p>
                   </div>
                 </div>
 
-                <div className="space-y-3 mb-8 bg-white/50 p-4 rounded-2xl">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Role</span>
-                    <span className="text-sm font-bold text-primary capitalize bg-green-50 px-3 py-1 rounded-full">
+                <div className="space-y-2 mb-6 flex-grow">
+                  <div className="flex items-center justify-between py-1 border-b border-gray-50">
+                    <span className="text-xs text-gray-500 font-medium">Role</span>
+                    <span className="text-[10px] font-bold text-gray-700 uppercase bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
                       {req.role.replace('_', ' ')}
                     </span>
                   </div>
                   {req.area && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Area Assigned</span>
-                      <span className="text-sm font-medium text-gray-800 flex items-center">
-                        <MapPin className="w-4 h-4 mr-1 text-gray-400" /> {req.area}
+                    <div className="flex items-center justify-between py-1 border-b border-gray-50">
+                      <span className="text-xs text-gray-500 font-medium">Area Assigned</span>
+                      <span className="text-xs font-medium text-gray-800 flex items-center">
+                        <MapPin className="w-3.5 h-3.5 mr-1 text-gray-400" /> {req.area}
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Status</span>
-                    <span className={`text-sm font-bold capitalize px-3 py-1 rounded-full ${req.status === 'Pending' ? 'bg-yellow-50 text-yellow-600' : req.status === 'Approved' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="text-xs text-gray-500 font-medium">Status</span>
+                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${req.status === 'Pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : req.status === 'Approved' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
                       {req.status}
                     </span>
                   </div>
                 </div>
 
                 {req.status === 'Pending' && (
-                  <div className="flex space-x-3">
+                  <div className="flex space-x-2 mt-auto pt-4 border-t border-gray-100">
                     <button 
                       onClick={() => handleAction(req._id, 'reject')}
-                      className="flex-1 flex justify-center items-center py-3 bg-white border-2 border-red-100 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-colors"
+                      className="flex-1 flex justify-center items-center py-2 bg-white border border-red-200 text-red-600 rounded-md text-xs font-bold hover:bg-red-50 transition-colors"
                     >
-                      <XCircle className="w-5 h-5 mr-2" /> Reject
+                      <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
                     </button>
                     <button 
                       onClick={() => handleAction(req._id, 'approve')}
-                      className="flex-1 flex justify-center items-center py-3 bg-gradient-to-r from-primary to-green-600 text-white rounded-xl font-bold shadow-lg shadow-green-200 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                      className="flex-1 flex justify-center items-center py-2 bg-[#10B981] text-white rounded-md text-xs font-bold hover:bg-[#059669] transition-colors"
                     >
-                      <CheckCircle className="w-5 h-5 mr-2" /> Approve
+                      <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approve
                     </button>
                   </div>
                 )}
-              </motion.div>
+              </div>
             ))}
-            </AnimatePresence>
           </div>
         )
       ) : (
         kycRequests.length === 0 ? (
-          <div className="glass p-12 rounded-3xl flex flex-col items-center text-center opacity-70">
-            <Shield className="w-16 h-16 text-gray-300 mb-4" />
-            <h3 className="text-xl font-bold text-gray-600 mb-2">No KYC Requests</h3>
-            <p className="text-gray-400">All KYC requests have been processed.</p>
+          <div className="bg-white border border-gray-200 p-12 rounded-xl flex flex-col items-center text-center shadow-sm">
+            <Shield className="w-12 h-12 text-gray-300 mb-4" />
+            <h3 className="text-base font-bold text-gray-900 mb-1">No KYC Requests</h3>
+            <p className="text-sm text-gray-500">All KYC requests have been processed.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <AnimatePresence>
-            {kycRequests.map((req, index) => (
-              <motion.div
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {kycRequests.map((req) => (
+              <div
                 key={req._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="glass p-6 rounded-3xl relative overflow-hidden flex flex-col"
+                className="bg-white border border-gray-200 p-5 rounded-xl flex flex-col shadow-sm"
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-bl-full" />
-                
-                <div className="flex items-center space-x-4 mb-6">
-                  <img src={req.profilePhotoUrl || 'https://via.placeholder.com/150'} alt="Profile" className="w-14 h-14 rounded-full object-cover shadow-sm border border-gray-200" />
+                <div className="flex items-center space-x-3 mb-4">
+                  <img src={req.profilePhotoUrl || 'https://via.placeholder.com/150'} alt="Profile" className="w-10 h-10 rounded-full object-cover border border-gray-200" />
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900">{req.fullName}</h3>
-                    <p className="text-sm text-gray-500">{req.user?.email || 'N/A'}</p>
+                    <h3 className="text-sm font-bold text-gray-900">{req.fullName}</h3>
+                    <p className="text-xs text-gray-500">{req.user?.email || 'N/A'}</p>
                   </div>
                 </div>
 
-                <div className="space-y-3 mb-6 bg-white/50 p-4 rounded-2xl flex-grow">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Role</span>
-                    <span className="text-sm font-bold text-blue-600 capitalize bg-blue-50 px-3 py-1 rounded-full">
+                <div className="space-y-2 mb-4 flex-grow">
+                  <div className="flex items-center justify-between py-1 border-b border-gray-50">
+                    <span className="text-xs text-gray-500 font-medium">Role</span>
+                    <span className="text-[10px] font-bold text-gray-700 uppercase bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
                       {req.role?.replace('_', ' ')}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Aadhaar</span>
-                    <span className="text-sm font-medium text-gray-800">{req.aadhaarNumber}</span>
+                  <div className="flex items-center justify-between py-1 border-b border-gray-50">
+                    <span className="text-xs text-gray-500 font-medium">Aadhaar</span>
+                    <span className="text-xs font-medium text-gray-900">{req.aadhaarNumber}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Mobile</span>
-                    <span className="text-sm font-medium text-gray-800">{req.mobile}</span>
+                  <div className="flex items-center justify-between py-1 border-b border-gray-50">
+                    <span className="text-xs text-gray-500 font-medium">Mobile</span>
+                    <span className="text-xs font-medium text-gray-900">{req.mobile}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Status</span>
-                    <span className={`text-sm font-bold capitalize px-3 py-1 rounded-full ${req.status === 'pending' ? 'bg-yellow-50 text-yellow-600' : req.status === 'approved' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="text-xs text-gray-500 font-medium">Status</span>
+                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${req.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : req.status === 'approved' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
                       {req.status}
                     </span>
                   </div>
                 </div>
 
-                <div className="mb-6 flex gap-2">
-                  <a href={req.documentUrl} target="_blank" rel="noreferrer" className="flex-1 flex justify-center items-center py-2 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors text-sm">
-                    <FileText className="w-4 h-4 mr-2" /> View Doc
+                <div className="mb-4">
+                  <a href={req.documentUrl} target="_blank" rel="noreferrer" className="flex justify-center items-center py-2 bg-gray-50 border border-gray-200 text-gray-700 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors">
+                    <FileText className="w-3.5 h-3.5 mr-1.5 text-gray-500" /> View Document
                   </a>
                 </div>
 
                 {req.status === 'pending' && (
-                  <div className="flex space-x-3 mt-auto">
+                  <div className="flex space-x-2 mt-auto pt-4 border-t border-gray-100">
                     <button 
                       onClick={() => handleKycAction(req._id, 'rejected')}
-                      className="flex-1 flex justify-center items-center py-3 bg-white border-2 border-red-100 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-colors"
+                      className="flex-1 flex justify-center items-center py-2 bg-white border border-red-200 text-red-600 rounded-md text-xs font-bold hover:bg-red-50 transition-colors"
                     >
-                      <XCircle className="w-5 h-5 mr-2" /> Reject
+                      <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
                     </button>
                     <button 
                       onClick={() => handleKycAction(req._id, 'approved')}
-                      className="flex-1 flex justify-center items-center py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                      className="flex-1 flex justify-center items-center py-2 bg-blue-600 text-white rounded-md text-xs font-bold hover:bg-blue-700 transition-colors"
                     >
-                      <CheckCircle className="w-5 h-5 mr-2" /> Approve
+                      <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approve
                     </button>
                   </div>
                 )}
-              </motion.div>
+              </div>
             ))}
-            </AnimatePresence>
           </div>
         )
       )}

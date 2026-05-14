@@ -8,17 +8,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#10b981", // green-500
-        secondary: "#3b82f6", // blue-500
-        dark: "#111827",
-        light: "#f3f4f6",
+        primary: "#10B981", // emerald-500
       },
       fontFamily: {
-        sans: ['Outfit', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
       },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      }
     },
   },
   plugins: [],

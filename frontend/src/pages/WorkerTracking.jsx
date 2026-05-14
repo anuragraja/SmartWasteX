@@ -1,10 +1,6 @@
 import api from "@/config/api";
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Activity, CheckCircle, Clock, X, MessageSquare, Image as ImageIcon } from 'lucide-react';
-import axios from 'axios';
-import GlassCard from '../components/GlassCard';
-import AnimatedButton from '../components/AnimatedButton';
+import { Search, MapPin, CheckCircle, Clock, X, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const WorkerTracking = () => {
@@ -77,9 +73,12 @@ const WorkerTracking = () => {
   const filteredWorkers = workers.filter(w => w.worker?.name?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Worker Tracking</h1>
+    <div className="space-y-6 max-w-6xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Worker Tracking</h1>
+          <p className="text-sm text-gray-500 mt-1">Monitor performance and active routes of workers.</p>
+        </div>
         <div className="relative w-full md:w-64">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-4 w-4 text-gray-400" />
@@ -89,138 +88,137 @@ const WorkerTracking = () => {
             placeholder="Search workers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary text-sm"
+            className="block w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] text-sm"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredWorkers.map((workerData, index) => (
-          <GlassCard
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredWorkers.map((workerData) => (
+          <div
             key={workerData._id}
-            delay={index * 0.1}
-            className="flex flex-col h-full"
+            className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col shadow-sm"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold text-xl">
+                <div className="w-10 h-10 bg-[#10B981]/10 text-[#10B981] rounded-lg flex items-center justify-center font-bold text-lg">
                   {workerData.worker?.name?.charAt(0) || 'W'}
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900">{workerData.worker?.name}</h3>
-                  <p className="text-xs text-gray-500">{workerData.worker?.email}</p>
+                  <h3 className="font-bold text-sm text-gray-900">{workerData.worker?.name}</h3>
+                  <p className="text-[10px] text-gray-500">{workerData.worker?.email}</p>
                 </div>
               </div>
-              <div className="flex flex-col items-end space-y-2">
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  workerData.performance >= 90 ? 'bg-green-100 text-green-700' : 
-                  workerData.performance >= 75 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+              <div className="flex flex-col items-end space-y-1.5">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                  workerData.performance >= 90 ? 'bg-green-50 text-green-700 border-green-200' : 
+                  workerData.performance >= 75 ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-red-50 text-red-700 border-red-200'
                 }`}>
-                  {workerData.performance}% Score
+                  {workerData.performance}% SCORE
                 </span>
                 {workerData.ranking && (
-                  <span className="px-2 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700">
-                    Rank #{workerData.ranking}
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    RANK #{workerData.ranking}
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="space-y-3 mt-auto">
-              <div className="flex items-center text-sm text-gray-600">
-                <CheckCircle className="w-4 h-4 mr-2 text-blue-500" />
-                <span>Tasks Completed: <span className="font-semibold text-gray-900">{workerData.uploadsCount}</span></span>
+            <div className="space-y-2 mt-auto">
+              <div className="flex items-center text-xs text-gray-600">
+                <CheckCircle className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                <span>Tasks Completed: <span className="font-medium text-gray-900">{workerData.uploadsCount}</span></span>
               </div>
-              <div className="flex items-start text-sm text-gray-600">
-                <MapPin className="w-4 h-4 mr-2 text-orange-500 mt-0.5" />
+              <div className="flex items-start text-xs text-gray-600">
+                <MapPin className="w-3.5 h-3.5 mr-2 text-gray-400 mt-0.5" />
                 <span>Areas: <span className="font-medium">{workerData.areasCovered.join(', ') || 'None'}</span></span>
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Clock className="w-4 h-4 mr-2 text-gray-400" />
+              <div className="flex items-center text-xs text-gray-600">
+                <Clock className="w-3.5 h-3.5 mr-2 text-gray-400" />
                 <span>Active: <span className="font-medium">
-                  {new Date(workerData.lastActive).toLocaleDateString()} {new Date(workerData.lastActive).toLocaleTimeString()}
+                  {new Date(workerData.lastActive).toLocaleDateString()} {new Date(workerData.lastActive).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </span></span>
               </div>
             </div>
 
-            <div className="mt-8 flex space-x-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-              <AnimatedButton variant="secondary" className="flex-1 py-2 text-sm" onClick={() => handleViewHistory(workerData._id, workerData.worker.name)}>
+            <div className="mt-5 flex space-x-2 pt-4 border-t border-gray-100">
+              <button 
+                onClick={() => handleViewHistory(workerData._id, workerData.worker.name)}
+                className="flex-1 bg-white border border-gray-300 text-gray-700 py-1.5 rounded-md text-xs font-medium hover:bg-gray-50 transition-colors"
+              >
                 View History
-              </AnimatedButton>
-              <AnimatedButton variant="primary" className="flex-1 py-2 text-sm" onClick={() => handleMessage(workerData._id, workerData.worker.name)}>
+              </button>
+              <button 
+                onClick={() => handleMessage(workerData._id, workerData.worker.name)}
+                className="flex-1 bg-[#10B981] text-white py-1.5 rounded-md text-xs font-medium hover:bg-[#059669] transition-colors"
+              >
                 Message
-              </AnimatedButton>
+              </button>
             </div>
-          </GlassCard>
+          </div>
         ))}
       </div>
 
-      {/* History Modal */}
-      <AnimatePresence>
-        {historyModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-gray-800 rounded-3xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl relative"
+      {historyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[80vh] flex flex-col shadow-xl relative border border-gray-200">
+            <button 
+              onClick={() => setHistoryModalOpen(false)}
+              className="absolute top-4 right-4 z-10 w-8 h-8 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-50"
             >
-              <button 
-                onClick={() => setHistoryModalOpen(false)}
-                className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-              >
-                <X className="w-6 h-6" />
-              </button>
+              <X className="w-4 h-4" />
+            </button>
 
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 pr-10">
-                Upload History - {selectedWorkerHistory?.name}
-              </h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-4 pr-10 border-b border-gray-100 pb-3">
+              Upload History <span className="font-normal text-gray-500 ml-1">/ {selectedWorkerHistory?.name}</span>
+            </h2>
 
+            <div className="flex-1 overflow-y-auto pr-2">
               {historyLoading ? (
                 <div className="flex justify-center p-12">
-                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#10B981]"></div>
                 </div>
               ) : selectedWorkerHistory?.uploads?.length === 0 ? (
-                <div className="text-center p-8 text-gray-500">
+                <div className="text-center p-8 text-sm text-gray-500">
                   No uploads found for this worker.
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {selectedWorkerHistory?.uploads?.map((upload) => (
-                    <div key={upload._id} className="flex gap-4 p-4 border border-gray-100 dark:border-gray-700 rounded-2xl bg-gray-50 dark:bg-gray-800/50 items-center">
+                    <div key={upload._id} className="flex gap-4 p-4 border border-gray-200 rounded-lg bg-gray-50 items-center">
                       {upload.image ? (
-                        <img src={upload.image} alt="Waste" className="w-20 h-20 object-cover rounded-xl shadow-sm" />
+                        <img src={upload.image} alt="Waste" className="w-16 h-16 object-cover rounded-md border border-gray-200" />
                       ) : (
-                        <div className="w-20 h-20 bg-gray-200 rounded-xl flex items-center justify-center">
-                          <ImageIcon className="w-8 h-8 text-gray-400" />
+                        <div className="w-16 h-16 bg-white border border-gray-200 rounded-md flex items-center justify-center">
+                          <ImageIcon className="w-6 h-6 text-gray-300" />
                         </div>
                       )}
                       <div className="flex-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-bold text-gray-800 dark:text-white flex items-center">
-                            <MapPin className="w-4 h-4 mr-1 text-primary" /> {upload.area}
+                        <div className="flex justify-between items-start mb-1.5">
+                          <h4 className="font-bold text-sm text-gray-900 flex items-center">
+                            <MapPin className="w-3.5 h-3.5 mr-1 text-gray-400" /> {upload.area}
                           </h4>
-                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                            upload.status === 'Empty' ? 'bg-green-100 text-green-700' :
-                            upload.status === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                            upload.status === 'Empty' ? 'bg-green-50 text-green-700 border-green-200' :
+                            upload.status === 'Medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                            'bg-red-50 text-red-700 border-red-200'
                           }`}>
-                            {upload.status}
+                            {upload.status.toUpperCase()}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center text-sm text-gray-500">
-                          <span className="flex items-center"><Clock className="w-4 h-4 mr-1" /> {new Date(upload.createdAt).toLocaleDateString()}</span>
-                          {upload.verified && <span className="text-green-600 font-medium flex items-center"><CheckCircle className="w-4 h-4 mr-1" /> Verified</span>}
+                        <div className="flex justify-between items-center text-[10px] text-gray-500 font-medium">
+                          <span className="flex items-center"><Clock className="w-3 h-3 mr-1" /> {new Date(upload.createdAt).toLocaleDateString()}</span>
+                          {upload.verified && <span className="text-[#10B981] flex items-center"><CheckCircle className="w-3 h-3 mr-1" /> VERIFIED</span>}
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </motion.div>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 };

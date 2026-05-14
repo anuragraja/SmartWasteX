@@ -2,9 +2,7 @@ import api from "@/config/api";
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import axios from 'axios';
-import { Filter, Layers } from 'lucide-react';
-import GlassCard from '../components/GlassCard';
+import { Filter, MapPin } from 'lucide-react';
 
 const Heatmap = () => {
   const [data, setData] = useState([]);
@@ -40,7 +38,7 @@ const Heatmap = () => {
       case 'Overflow': return '#ef4444'; // red
       case 'Full': return '#f97316'; // orange
       case 'Medium': return '#eab308'; // yellow
-      case 'Empty': return '#22c55e'; // green
+      case 'Empty': return '#10b981'; // green
       default: return '#3b82f6';
     }
   };
@@ -48,78 +46,77 @@ const Heatmap = () => {
   const filteredData = filter === 'All' ? data : data.filter(d => d.status === filter || (filter === 'Critical' && (d.status === 'Overflow' || d.status === 'Full')));
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-gray-900/50 backdrop-blur-md p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-primary to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
-            <Layers className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-gray-800 dark:text-white tracking-tight">Pollution Heatmap</h1>
-            <p className="text-sm text-gray-500">Live density of waste reports</p>
-          </div>
+    <div className="h-[calc(100vh-6rem)] flex flex-col space-y-4 max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Pollution Heatmap</h1>
+          <p className="text-sm text-gray-500 mt-1">Live density of waste reports across regions</p>
         </div>
         <div className="flex items-center space-x-3 w-full md:w-auto">
-          <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-xl flex items-center">
-            <Filter className="w-5 h-5 text-gray-400 mx-2" />
+          <div className="bg-white border border-gray-300 rounded-md flex items-center px-2 py-1.5 shadow-sm">
+            <Filter className="w-4 h-4 text-gray-400 mr-2" />
             <select 
-              className="bg-transparent border-none focus:ring-0 text-sm font-semibold text-gray-700 dark:text-gray-200 py-1 px-2 outline-none cursor-pointer"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
-            <option value="All">All Bins</option>
-            <option value="Critical">Critical (Full/Overflow)</option>
-            <option value="Overflow">Overflowing Only</option>
-            <option value="Empty">Clean / Empty</option>
+              className="bg-transparent border-none focus:ring-0 text-sm font-medium text-gray-700 outline-none cursor-pointer"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="All">All Regions</option>
+              <option value="Critical">Critical (Full/Overflow)</option>
+              <option value="Overflow">Overflowing Only</option>
+              <option value="Empty">Clean / Empty</option>
             </select>
           </div>
         </div>
       </div>
 
-      <GlassCard className="flex-1 overflow-hidden relative p-2 shadow-2xl">
+      <div className="flex-1 overflow-hidden relative border border-gray-200 rounded-xl bg-white shadow-sm z-0">
         {!loading && (
           <MapContainer 
             center={[28.6139, 77.2090]} 
             zoom={13} 
-            style={{ height: '100%', width: '100%' }}
+            style={{ height: '100%', width: '100%', zIndex: 0 }}
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
             />
             {filteredData.map(point => (
               <CircleMarker
                 key={point._id}
                 center={[point.location.lat, point.location.lng]}
-                radius={point.status === 'Overflow' ? 20 : 12}
+                radius={point.status === 'Overflow' ? 16 : 10}
                 fillColor={getStatusColor(point.status)}
                 color={getStatusColor(point.status)}
                 weight={2}
                 opacity={0.8}
-                fillOpacity={0.5}
+                fillOpacity={0.4}
               >
                 <Popup>
-                  <div className="font-semibold">{point.area}</div>
-                  <div className={`font-bold mt-1 ${
-                    point.status === 'Overflow' ? 'text-red-500' :
-                    point.status === 'Full' ? 'text-orange-500' :
-                    point.status === 'Medium' ? 'text-yellow-500' : 'text-green-500'
-                  }`}>
-                    Status: {point.status}
+                  <div className="p-1">
+                    <div className="font-bold text-sm text-gray-900 flex items-center mb-1">
+                      <MapPin className="w-3 h-3 mr-1 text-gray-400" /> {point.area}
+                    </div>
+                    <div className={`text-xs font-semibold px-2 py-1 rounded inline-block ${
+                      point.status === 'Overflow' ? 'bg-red-50 text-red-700 border border-red-200' :
+                      point.status === 'Full' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
+                      point.status === 'Medium' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' : 'bg-green-50 text-green-700 border border-green-200'
+                    }`}>
+                      {point.status.toUpperCase()}
+                    </div>
                   </div>
                 </Popup>
               </CircleMarker>
             ))}
           </MapContainer>
         )}
-      </GlassCard>
+      </div>
 
-      <GlassCard className="flex flex-wrap justify-center gap-6 p-4">
-        <div className="flex items-center"><span className="w-4 h-4 rounded-full bg-red-500 mr-2"></span><span className="text-sm font-medium">Overflow (Critical)</span></div>
-        <div className="flex items-center"><span className="w-4 h-4 rounded-full bg-orange-500 mr-2"></span><span className="text-sm font-medium">Full</span></div>
-        <div className="flex items-center"><span className="w-4 h-4 rounded-full bg-yellow-500 mr-2"></span><span className="text-sm font-medium">Medium</span></div>
-        <div className="flex items-center"><span className="w-4 h-4 rounded-full bg-green-500 mr-2 shadow-sm shadow-green-500/50"></span><span className="text-sm font-bold text-gray-700 dark:text-gray-300">Clean / Empty</span></div>
-      </GlassCard>
+      <div className="bg-white border border-gray-200 rounded-xl flex flex-wrap justify-center gap-6 p-4 shadow-sm">
+        <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-red-500 mr-2 border border-red-600"></span><span className="text-xs font-medium text-gray-700 uppercase tracking-wide">Overflow (Critical)</span></div>
+        <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-orange-500 mr-2 border border-orange-600"></span><span className="text-xs font-medium text-gray-700 uppercase tracking-wide">Full</span></div>
+        <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-yellow-400 mr-2 border border-yellow-500"></span><span className="text-xs font-medium text-gray-700 uppercase tracking-wide">Medium</span></div>
+        <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-[#10B981] mr-2 border border-[#059669]"></span><span className="text-xs font-medium text-gray-700 uppercase tracking-wide">Clean / Empty</span></div>
+      </div>
     </div>
   );
 };
